@@ -1,11 +1,4 @@
-const {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-} = require("discord.js");
-
-const { getQueueList } = require("../queueStore");
+const createQueuePanel = require("../utils/createQueuePanel");
 
 module.exports = async function sendInitialPanel(client) {
   const channelId = process.env.PANEL_CHANNEL_ID;
@@ -16,33 +9,20 @@ module.exports = async function sendInitialPanel(client) {
     return;
   }
 
-  const queueText = getQueueList() || "No one in the queue.";
-
-  const embed = new EmbedBuilder()
-    .setTitle("Queue:")
-    .setDescription(queueText)
-    .setColor(0x2f3136);
-
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("join_button")
-      .setLabel("Join")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("dc_button")
-      .setLabel("DC")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("leave_button")
-      .setLabel("Leave")
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId("tag_button")
-      .setLabel("Tag")
-      .setStyle(ButtonStyle.Success)
-  );
+  const { embed, row } = createQueuePanel();
 
   try {
+    // Delete old panels
+    const messages = await channel.messages.fetch({ limit: 10 });
+    const panels = messages.filter(
+      (m) => m.embeds[0]?.title === "Queue:" && m.author?.id === client.user.id
+    );
+    for (const msg of panels.values()) {
+      try {
+        await msg.delete();
+      } catch {}
+    }
+
     await channel.send({
       embeds: [embed],
       components: [row],

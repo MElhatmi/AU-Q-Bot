@@ -1,4 +1,5 @@
 const queue = [];
+let lock = Promise.resolve();
 
 function getQueue() {
   return queue;
@@ -23,9 +24,13 @@ function removeFromQueue(userId) {
 
 function getQueueList() {
   if (queue.length === 0) return "\nNo one in the queue.";
+  return `\n${queue.map((p, i) => `${i + 1}. ${p.displayName}`).join("\n")}`;
+}
 
-  const lines = queue.map((p, i) => `${i + 1}. ${p.displayName}`);
-  return `\n${lines.join("\n")}`;
+function withLock(fn) {
+  const run = lock.then(() => fn().catch(console.error));
+  lock = run.catch(() => {}); // Prevent lock breakage
+  return run;
 }
 
 module.exports = {
@@ -33,4 +38,5 @@ module.exports = {
   addToQueue,
   removeFromQueue,
   getQueueList,
+  withLock,
 };
