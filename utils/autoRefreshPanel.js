@@ -7,7 +7,7 @@ const messageCounts = new Map();
 const ALLOWED_CHANNELS = process.env.PANEL_CHANNEL_IDS?.split(",") || [];
 
 async function autoRefreshPanel(message) {
-  // Ignore bots, non-text channels, or unapproved channels
+  // which repo is this
   if (
     message.author.bot ||
     !message.channel.isTextBased() ||
